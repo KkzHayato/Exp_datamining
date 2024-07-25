@@ -2,25 +2,21 @@ import pytest
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV, validation_curve
 from sklearn.metrics import accuracy_score, f1_score
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import validation_curve
 import matplotlib.pyplot as plt
 
-# テスト用のデータを作成する
+# テスト用のデータを生成する
 def generate_test_data():
-    # サンプルデータ
     np.random.seed(0)
     X = np.random.rand(100, 6)  # 100サンプル、6特徴量
-    y = np.random.randint(0, 2, size=100)  # バイナリクラス
+    y = np.random.randint(1, 11, size=100)  # 1から10までの品質スコア
     return X, y
 
 # k_neighbors_learning 関数のテスト
 def test_k_neighbors_learning():
     X, y = generate_test_data()
     
-    # テスト用関数を実行する
     def k_neighbors_learning(a, b):
         X_train, X_test, Y_train, Y_test = train_test_split(a, b, test_size=0.3, shuffle=True, random_state=3, stratify=b)
         model = KNeighborsClassifier(n_neighbors=22, weights="uniform", algorithm="auto", metric="canberra")
@@ -74,20 +70,28 @@ def test_k_neighbors_gridsearch():
 def test_val_curve():
     X, y = generate_test_data()
     
-    def val_curve(model):
+    def val_curve(a, b, model1):
         param_range = [5, 10, 15, 20, 25, 30, 35, 40]
         train_scores, test_scores = validation_curve(
-            estimator=model,
-            X=X, y=y,
+            estimator=model1,
+            X=a, y=b,
             param_name="n_neighbors",
             param_range=param_range, cv=10)
         
         return train_scores, test_scores
     
     model = KNeighborsClassifier()
-    train_scores, test_scores = val_curve(model)
+    train_scores, test_scores = val_curve(X, y, model)
     
     # 訓練スコアとテストスコアの形状を確認する
     assert train_scores.shape[1] == len([5, 10, 15, 20, 25, 30, 35, 40])
     assert test_scores.shape[1] == len([5, 10, 15, 20, 25, 30, 35, 40])
+
+
+print("kneighborlearningのユニットテスト")
+#test_k_neighbors_learning()
+print("グリッドサーチのユニットテスト")
+test_k_neighbors_gridsearch()
+print("検証曲線のユニットテスト")
+test_val_curve()
 
